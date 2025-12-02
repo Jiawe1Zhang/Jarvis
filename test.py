@@ -10,9 +10,9 @@ async def main() -> None:
     """
     client = MCPClient()
     try:
-        await client.connect_to_server("mcp-server-fetch", command="uvx")
+        await client.init("mcp-server-fetch", command="uvx")
     finally:
-        await client.cleanup()
+        await client.close()
 
 
 if __name__ == "__main__":

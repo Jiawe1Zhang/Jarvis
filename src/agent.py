@@ -2,7 +2,7 @@ import json
 from typing import List, Optional
 
 from .chat_openai import ChatOpenAI
-from .mcp_client import MCPClient
+from .MCP_Client import MCPClient
 from .utils import log_title
 
 
@@ -28,9 +28,14 @@ class Agent:
         log_title("TOOLS")
         for client in self.mcp_clients:
             client.init()
+
+        # 拿到所有工具
         tools = []
         for client in self.mcp_clients:
+            # the type of get_tools is a dict list
             tools.extend(client.get_tools())
+
+        # 初始化 llm
         self.llm = ChatOpenAI(self.model, self.system_prompt, tools, self.context)
 
     def close(self) -> None:
@@ -41,8 +46,11 @@ class Agent:
         if not self.llm:
             raise RuntimeError("Agent not initialized")
 
+        # 拿到的返回response里有 content 和 tool_calls
         response = self.llm.chat(prompt)
         while True:
+            # if不存在拿到空列表, 也就是没有调用工具, 直接返回content
+            # if存在, 则调用工具, 并把工具获取的结果append到llm里继续对话, 直到没有工具调用为止
             tool_calls = response.get("tool_calls", [])
             if tool_calls:
                 for tool_call in tool_calls:
