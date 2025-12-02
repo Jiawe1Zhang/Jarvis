@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from contextlib import AsyncExitStack
 import json
 
@@ -14,20 +14,20 @@ load_dotenv()
 
 
 class MCPClient:
-    def __init__(self):
+    def __init__(self, server_script_path: str, command: str = "python"):
         # Initialize session and client objects
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
-        self.stdio = None
-        self.write = None
+        self.server_script_path = server_script_path
+        self.command = command
 
-    async def connect_to_server(self, server_script_path: str, command: str = "python") -> None:
+    async def init(self) -> None:
         """
             Connect to an MCP server
         """
         server_params = StdioServerParameters(
-            command=command,
-            args=[server_script_path],
+            command=self.command,
+            args=[self.server_script_path],
             env=None
         )
 
@@ -46,16 +46,39 @@ class MCPClient:
         } for tool in response.tools]
         print(f"\nConnected to server with available_tools:\n{json.dumps(available_tools, indent=2)}")
 
-    async def init(self, server_script_path: str, command: str = "python") -> None:
-        """
-        Convenience initializer so the caller can do:
-            client = MCPClient()
-            await client.init("mcp-server-fetch", command="uvx")
-        """
-        await self.connect_to_server(server_script_path, command=command)
-
-    async def cleanup(self) -> None:
+    async def close(self):
         """
         Clean up resources
         """
         await self.exit_stack.aclose()
+
+    async def get_tools(self) -> List[dict]:
+        """
+        Retrieve the list of available tools from the MCP server
+        用于从 MCP 服务器获取可用工具列表, 并将其转换为字典列表格式返回
+        mcp返回的工具包含 name, description, inputSchema 等字段, 后续会被用于构建 LLM 的工具调用定义, 
+        必须符合 OpenAI function-calling 的规范
+        """
+        if not self.session:
+            raise RuntimeError("MCPClient not initialized")
+
+        response = await self.session.list_tools()
+        tools = [{
+            "name": tool.name,
+            "description": tool.description,
+            "inputSchema": tool.inputSchema
+        } for tool in response.tools]
+        return tools
+    
+    async def call_tool(self, tool_name: str, arguments: dict) -> Any:
+        """
+        Call a tool on the MCP server
+        """
+        if not self.session:
+            raise RuntimeError("MCPClient not initialized")
+            
+        #refer to https://modelcontextprotocol.io/docs/develop/build-client#calling-tools
+
+        result = await self.session.call_tool(tool_name, arguments)
+        return result.content
+
