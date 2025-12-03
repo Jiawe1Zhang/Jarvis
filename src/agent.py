@@ -1,9 +1,9 @@
 import json
 from typing import List, Optional
 
-from .chat_openai import ChatOpenAI
-from .MCP_Client import MCPClient
-from .utils import log_title
+from src.chat_openai import ChatOpenAI
+from src.MCP_Client import MCPClient
+from src.utils import log_title
 
 
 class Agent:
@@ -24,60 +24,82 @@ class Agent:
         self.model = model
         self.llm: Optional[ChatOpenAI] = None
 
-    def init(self) -> None:
+    async def init(self) -> None:
         log_title("TOOLS")
         for client in self.mcp_clients:
-            client.init()
+            await client.init()
 
         # 拿到所有工具
         tools = []
         for client in self.mcp_clients:
             # the type of get_tools is a dict list
-            tools.extend(client.get_tools())
+            client_tools = await client.get_tools()
+            tools.extend(client_tools)
 
         # 初始化 llm
         self.llm = ChatOpenAI(self.model, self.system_prompt, tools, self.context)
 
-    def close(self) -> None:
+    async def close(self) -> None:
         for client in self.mcp_clients:
-            client.close()
+            await client.close()
 
-    def invoke(self, prompt: str) -> str:
+    async def invoke(self, prompt: str) -> str:
         if not self.llm:
             raise RuntimeError("Agent not initialized")
 
         # 拿到的返回response里有 content 和 tool_calls
         response = self.llm.chat(prompt)
         while True:
-            # if不存在拿到空列表, 也就是没有调用工具, 直接返回content
-            # if存在, 则调用工具, 并把工具获取的结果append到llm里继续对话, 直到没有工具调用为止
+            content = response.get("content", "")
             tool_calls = response.get("tool_calls", [])
+
+            # 纯原生 Function Calling，不使用兜底策略
             if tool_calls:
+                print(f"[Native Function Calling] 检测到 {len(tool_calls)} 个工具调用")
                 for tool_call in tool_calls:
-                    mcp = self._find_client(tool_call.name)
+                    tool_name = tool_call.name
+                    tool_args = tool_call.arguments
+                    tool_id = tool_call.id
+                    try:
+                        tool_args_dict = json.loads(tool_args) if tool_args else {}
+                    except json.JSONDecodeError:
+                        tool_args_dict = {}
+
+                    mcp = await self._find_client(tool_name)
                     if not mcp:
-                        self.llm.append_tool_result(tool_call.id, "Tool not found")
+                        self.llm.append_tool_result(tool_id, "Tool not found")
                         continue
                     log_title("TOOL USE")
-                    print(f"Calling tool: {tool_call.name}")
-                    print(f"Arguments: {tool_call.arguments}")
+                    print(f"Calling tool: {tool_name}")
+                    print(f"Arguments: {tool_args_dict}")
                     try:
-                        result = mcp.call_tool(
-                            tool_call.name,
-                            json.loads(tool_call.arguments) if tool_call.arguments else {},
+                        result = await mcp.call_tool(
+                            tool_name,
+                            tool_args_dict,
                         )
+                        # Convert MCP content objects to serializable format
+                        if isinstance(result, list):
+                            serialized_result = []
+                            for item in result:
+                                if hasattr(item, 'text'):
+                                    serialized_result.append(item.text)
+                                elif hasattr(item, 'model_dump'):
+                                    serialized_result.append(item.model_dump())
+                                else:
+                                    serialized_result.append(str(item))
+                            result = serialized_result
                     except Exception as exc:
                         result = {"error": str(exc)}
                     print(f"Result: {result}")
-                    self.llm.append_tool_result(tool_call.id, json.dumps(result))
+                    self.llm.append_tool_result(tool_id, json.dumps(result))
                 response = self.llm.chat()
                 continue
-            self.close()
-            return response.get("content", "")
+            return content
 
-    def _find_client(self, tool_name: str) -> Optional[MCPClient]:
+    async def _find_client(self, tool_name: str) -> Optional[MCPClient]:
         for client in self.mcp_clients:
-            for tool in client.get_tools():
+            tools = await client.get_tools()
+            for tool in tools:
                 if tool["name"] == tool_name:
                     return client
         return None

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
-from .utils import ToolCall, log_title
+from src.utils import ToolCall, log_title
 
 
 class ChatOpenAI:
@@ -17,13 +17,24 @@ class ChatOpenAI:
         system_prompt: str = "",
         tools: Optional[List[Dict[str, Any]]] = None,
         context: str = "",
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
     ) -> None:
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY must be set")
+        # Support either cloud (OpenAI-compatible) or local (e.g., Ollama) endpoints.
+        resolved_base_url = (
+            base_url
+            or os.environ.get("OPENAI_BASE_URL")
+            or os.environ.get("OLLAMA_BASE_URL")
+        )
+        resolved_api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        if not resolved_api_key and resolved_base_url:
+            # Ollama 等本地端点不校验 key，给一个占位符即可。
+            resolved_api_key = "ollama"
+        if not resolved_api_key:
+            raise RuntimeError("OPENAI_API_KEY must be set (or provide api_key manually)")
         self.client = OpenAI(
-            api_key=api_key,
-            base_url=os.environ.get("OPENAI_BASE_URL"),
+            api_key=resolved_api_key,
+            base_url=resolved_base_url,
         )
         self.model = model
         self.messages: List[Dict[str, Any]] = []

@@ -14,12 +14,12 @@ load_dotenv()
 
 
 class MCPClient:
-    def __init__(self, server_script_path: str, command: str = "python"):
+    def __init__(self, command: str, args: List[str]):
         # Initialize session and client objects
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
-        self.server_script_path = server_script_path
         self.command = command
+        self.args = args
 
     async def init(self) -> None:
         """
@@ -27,7 +27,7 @@ class MCPClient:
         """
         server_params = StdioServerParameters(
             command=self.command,
-            args=[self.server_script_path],
+            args=self.args,
             env=None
         )
 
@@ -50,7 +50,11 @@ class MCPClient:
         """
         Clean up resources
         """
-        await self.exit_stack.aclose()
+        try:
+            await self.exit_stack.aclose()
+        except BaseException:
+            # Ignore errors during cleanup (like CancelledError or RuntimeError from anyio)
+            pass
 
     async def get_tools(self) -> List[dict]:
         """
