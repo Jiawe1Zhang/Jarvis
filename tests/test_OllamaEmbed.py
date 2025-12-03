@@ -3,7 +3,7 @@ import requests
 from dataclasses import dataclass
 from math import sqrt
 from typing import List
-from src.vector_store import VectorStore
+from src.rag.vector_store import VectorStore
 
 # 新增：导入 dotenv 来加载 .env 文件
 from dotenv import load_dotenv

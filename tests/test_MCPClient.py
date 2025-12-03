@@ -1,6 +1,6 @@
 import asyncio
 
-from src.MCP_Client import MCPClient
+from src.mcp.mcp_client import MCPClient
 
 
 async def main() -> None:
@@ -8,9 +8,9 @@ async def main() -> None:
     使用 uvx 拉起官方 fetch MCP server，初始化后列出工具。
     需要本机有 uvx（uv）并可下载/运行 mcp-server-fetch。
     """
-    client = MCPClient()
+    client = MCPClient(command="uvx", args=["mcp-server-fetch"])
     try:
-        await client.init("mcp-server-fetch", command="uvx")
+        await client.init()
     finally:
         await client.close()
 

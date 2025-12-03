@@ -1,8 +1,8 @@
 import json
 from typing import List, Optional
 
-from src.chat_openai import ChatOpenAI
-from src.MCP_Client import MCPClient
+from src.mcp.llm_client import ChatOpenAI
+from src.mcp.mcp_client import MCPClient
 from src.utils import log_title
 
 

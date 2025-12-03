@@ -1,6 +1,6 @@
 import unittest
 import os
-from src.chat_openai import ChatOpenAI
+from src.mcp.llm_client import ChatOpenAI
 
 class ChatOpenAITest(unittest.TestCase):
     def test_real_ollama_chat(self):

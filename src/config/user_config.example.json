@@ -1,0 +1,26 @@
+{
+  "task_template": "总结并且创作一个关于Elwyn.Skiles的故事, 你可以随意发挥想象力, 但要确保故事有趣且引人入胜, 更重要的是不能太长! 把故事和她的基本信息保存到{output_path}/ElwynSkiles.md, 输出一个漂亮md文件",
+  "knowledge_globs": ["knowledge/*.md"],
+  "output_dir": "output",
+  "llm": {
+    "model": "gpt-5"
+  },
+  "embedding": {
+    "model": "bge-m3"
+  },
+  "vector_store": {
+    "backend": "memory"
+  },
+  "mcp_servers": [
+    {
+      "name": "fetch",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    {
+      "name": "filesystem",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "{output_dir}"]
+    }
+  ]
+}
