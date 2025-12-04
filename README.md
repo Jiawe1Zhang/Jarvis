@@ -40,10 +40,11 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
 
 ## 🔮 To Be Update
 
-*   **Advanced Vector Stores**: Support for large-scale vector databases (Milvus, Chroma, pgvector) to enable long-term agent memory and massive knowledge bases.
-*   **Flexible RAG Strategies**: Pluggable modules for Query Rewriting, Reranking (Cohere/BGE-Reranker), and advanced chunking strategies.
-*   **Multi-Format Support**: Native parsing for `.pdf`, `.csv`, and `.docx` files.
-*   **ReAct Optimization**: Enhanced ReAct loop with robust fallback strategies for local LLMs (regex parsing for models with weak function calling) and toggleable MCP support.
+- [ ] **Advanced Vector Stores**: Support for Milvus, Chroma, and faiss for long-term memory.
+- [ ] **Flexible RAG Strategies**: Pluggable modules for Query Rewriting, Reranking, and Hybrid Search.
+- [ ] **Multi-Format Support**: Native parsing for `.pdf`, `.csv`, `.docx`, and `.pptx`.
+- [ ] **ReAct Optimization**: Enhanced fallback strategies for local SLMs (Small Language Models) and toggleable MCP tools.
+- [ ] **Local Fine-tuning**: Pipeline for fine-tuning Ollama models on your own data to improve domain-specific performance.
 
 ## 📄 License
 

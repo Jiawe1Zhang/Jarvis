@@ -2,19 +2,9 @@ import csv
 import os
 from pathlib import Path
 from typing import Optional
-
-# 需要安装 pypdf: pip install pypdf
-try:
-    from pypdf import PdfReader
-except ImportError:
-    PdfReader = None
-
+from pypdf import PdfReader
 
 def load_file(file_path: Path) -> str:
-    """
-    根据文件扩展名加载文件内容。
-    支持 .md, .txt, .csv, .pdf
-    """
     ext = file_path.suffix.lower()
     
     if ext in [".md", ".txt", ".json"]:
@@ -61,9 +51,6 @@ def _load_csv(path: Path) -> str:
 
 
 def _load_pdf(path: Path) -> str:
-    """
-    提取 PDF 文本。
-    """
     if PdfReader is None:
         print(f"Error: pypdf not installed. Cannot read {path}. Please run `pip install pypdf`.")
         return ""
