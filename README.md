@@ -86,10 +86,13 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
     - [ ] **Reranking**: Cross-encoder based result re-ordering.
     - [ ] **Advanced Chunking**: Semantic and Agentic splitting strategies.
     - [ ] **Hybrid Search**: Vector + Keyword (BM25) retrieval.
-- ✅ **Prompt Management**: Centralized prompt templates in `prompts/`.
 - [ ] **Advanced Vector Stores**: Support for Milvus/Chroma (Currently In-Memory).
 - [ ] **ReAct Optimization**: Enhanced fallback strategies for local SLMs.
-- [ ] **Local Fine-tuning**: Pipeline for fine-tuning Ollama models on your own data.
+- [ ] **Local Fine-tuning Pipeline (Model Ops)**:
+    - [ ] **Hugging Face Integration**: Script to download base models (e.g., Llama-3, Qwen) directly from HF/ModelScope.
+    - [ ] **LLaMA-Factory Bridge**: Automated config generation to trigger LoRA/Full fine-tuning jobs using your RAG data.
+    - [ ] **GGUF Conversion**: Integrated `llama.cpp` conversion scripts to transform fine-tuned HF weights to `.gguf`.
+    - [ ] **Ollama Import**: Auto-generate `Modelfile` and run `ollama create` to serve your custom model immediately.
 
 ## 📄 License
 
