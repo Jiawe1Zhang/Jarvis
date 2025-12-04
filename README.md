@@ -4,7 +4,7 @@
 
 > "Stop fighting the framework. Start building the agent."
 
-![Jarvis Architecture](JARVIS.png)
+![Jarvis Architecture](images/jarvis-architecture.png)
 
 ## 💡 Motivation
 
@@ -77,6 +77,40 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
     ```bash
     python main.py
     ```
+
+## 🧩 Notion MCP (optional)
+
+Connect Jarvis to Notion via MCP without touching agent logic:
+
+1) Create an integration  
+   Go to Notion → Integrations → New integration in your workspace. Enable **Read content**, **Update content**, **Insert content**.  
+   ![Notion integration list](images/notion-integration-list.png)  
+   ![Notion integration capabilities](images/notion-integration-capabilities.png)
+
+2) Get the token  
+   Copy the Internal Integration Token (`ntn_...`). Keep it in `.env`, not in code.
+
+3) Choose pages/databases  
+   Search the pages/databases you want the agent to connect. And give them Permissions.
+   ![Notion page access](images/notion-page-access.png)
+
+4) Wire it into Jarvis  
+   Add to `.env`:
+   ```env
+   NOTION_TOKEN=ntn_xxx
+   ```  
+   Add to `config/user_config.json` (`env` placeholders resolve from `.env` at runtime):
+   ```json
+   {
+     "name": "notion",
+     "command": "npx",
+     "args": ["-y", "@modelcontextprotocol/server-notion"],
+     "env": {
+       "NOTION_TOKEN": "${NOTION_TOKEN}"
+     }
+   }
+   ```
+   Run `python main.py`. Startup logs should show Notion tools; 401/403 usually means bad token or the page was not shared with the integration.
 
 ## ✅ Features Checklist
 

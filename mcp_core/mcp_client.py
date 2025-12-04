@@ -1,6 +1,7 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Dict
 from contextlib import AsyncExitStack
 import json
+import os
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -14,12 +15,13 @@ load_dotenv()
 
 
 class MCPClient:
-    def __init__(self, command: str, args: List[str]):
+    def __init__(self, command: str, args: List[str], env: Optional[Dict[str, str]] = None):
         # Initialize session and client objects
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
         self.command = command
         self.args = args
+        self.env = env or None
 
     async def init(self) -> None:
         """
@@ -28,7 +30,7 @@ class MCPClient:
         server_params = StdioServerParameters(
             command=self.command,
             args=self.args,
-            env=None
+            env=self._resolve_env(),
         )
 
         stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
@@ -86,3 +88,29 @@ class MCPClient:
         result = await self.session.call_tool(tool_name, arguments)
         return result.content
 
+    def _resolve_env(self) -> Optional[Dict[str, str]]:
+        """
+        Resolve env values like "$FOO" or "${FOO}" from process env,
+        so secrets stay in .env and never hard-coded in config.
+        """
+        if not self.env:
+            return None
+
+        resolved: Dict[str, str] = {}
+        for key, value in self.env.items():
+            if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+                env_key = value[2:-1]
+                resolved_value = os.environ.get(env_key)
+            elif isinstance(value, str) and value.startswith("$"):
+                env_key = value[1:]
+                resolved_value = os.environ.get(env_key)
+            else:
+                resolved_value = value
+                env_key = None
+
+            if resolved_value is None:
+                missing = env_key or key
+                raise RuntimeError(f"Environment variable '{missing}' is not set for MCP server '{self.command}'")
+            resolved[key] = resolved_value
+
+        return resolved

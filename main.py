@@ -43,7 +43,16 @@ def main() -> None:
     mcp_clients = []
     for server in cfg["mcp_servers"]:
         args = [arg.replace("{output_dir}", str(output_dir)) for arg in server["args"]]
-        mcp_clients.append(MCPClient(command=server["command"], args=args))
+        env = server.get("env")
+        if env:
+            resolved_env = {
+                key: value.replace("{output_dir}", str(output_dir)) if isinstance(value, str) else value
+                for key, value in env.items()
+            }
+        else:
+            resolved_env = None
+
+        mcp_clients.append(MCPClient(command=server["command"], args=args, env=resolved_env))
 
     # --- Agent (model read from config, others from .env) ---
     model_name = llm_cfg["model"]

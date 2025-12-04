@@ -1,5 +1,5 @@
 {
-  "task_template": "Jarvis 是一个刚入学ZJU的医学系的学生, Jarvis想要统计今年他们医学院的录取情况, 顺便通过分析来自和他同专业同学B的高考故事来分析他后面同学B的竞争情况!你的分析要简短简洁but必须分析得有道理, 把他对在ZJU和同学B学习竞争情况的分析保存到{output_path}/zjuanalysisqueryrewriteB.md, 输出一个漂亮md文件",
+  "task_template": "Jarvis 是一个刚入学ZJU的医学系的学生, Jarvis想要统计今年他们医学院的录取情况, 顺便通过分析来自和他同专业同学B的高考故事来分析他后面同学B的竞争情况!你的分析要简短简洁but必须分析得有道理, 把他对在ZJU和同学B学习竞争情况的分析保存到Jarvis的Notion page里, 作为正文内容, 而不是notion中的评论",
   "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
   "output_dir": "output",
   "llm": {
