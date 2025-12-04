@@ -1,5 +1,8 @@
 from typing import List
 
+
+### mimic RecursiveCharacterTextSplitter from LangChain 😆😄 
+
 class RecursiveCharacterTextSplitter:
     def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50):
         self.chunk_size = chunk_size

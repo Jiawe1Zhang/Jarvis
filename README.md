@@ -19,32 +19,77 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
 
 1.  **The Brain (Agent)**: A pure Python implementation of the ReAct/Loop pattern. It handles reasoning, planning, and execution without heavy abstractions.
 2.  **The Hands (MCP_CORE)**: Instead of hard-coding tools, Jarvis implements a native **MCP Client**. It connects to any standard MCP Server (Filesystem, Git, Fetch) or your own custom Python scripts.
-3.  **The Memory (RAG)**: A controllable, lightweight RAG pipeline that ingests PDFs, CSVs, and Markdown, giving your agent grounded context without the bloat.
+3.  **The Memory (RAG)**: A controllable, lightweight RAG pipeline.
+    *   **Multi-Format**: Native support for `.pdf`, `.csv`, and `.md`.
+    *   **Smart Chunking**: Choose between "Whole Document" or "Recursive Character" splitting strategies.
+    *   **Query Rewriting**: Automatically decomposes complex user tasks into targeted search queries to solve the "Lost in the Middle" problem.
+
+## 📂 Project Structure
+
+```text
+.
+├── agent/              # Core Agent Logic & LLM Client
+├── config/             # Configuration files (user_config.json)
+├── knowledge/          # Your documents (PDF, MD, CSV)
+├── mcp_core/           # Native Model Context Protocol Client
+├── output/             # Agent artifacts
+├── prompts/            # Centralized System Prompts
+├── rag/                # RAG Pipeline
+│   ├── chunk/          # Splitting strategies (Recursive, etc.)
+│   ├── context.py      # Retrieval logic
+│   ├── query_rewriter.py # LLM-based Query Decomposition
+│   └── ...
+├── utils/              # Shared utilities
+└── main.py             # Entry point
+```
 
 ## 📦 Quick Start
 
 1.  **Clone & Install**
     ```bash
-    git clone https://github.com/yourusername/Jarvis.git
+    git clone https://github.com/Jiawe1Zhang/Jarvis.git
     pip install -r requirements.txt
     ```
 
-2.  **Configure**
-    Set your keys in `.env` and define your task in `config/user_config.json`.
+2.  **Configure Environment**
+    Create a `.env` file:
+    ```env
+    OPENAI_API_KEY=sk-...
+    OPENAI_BASE_URL=https://api.openai.com/v1
+    # Or for Ollama
+    # OLLAMA_BASE_URL=http://localhost:11434/v1
+    ```
 
-3.  **Run**
+3.  **Customize Behavior**
+    Edit `config/user_config.json` to control RAG strategies:
+    ```json
+    "embedding": {
+      "model": "bge-m3",
+      "chunking_strategy": "recursive",  // "whole" or "recursive"
+      "enable_query_rewrite": true,      // Enable LLM-based query decomposition
+      "rewrite_num_queries": 3           // Number of sub-queries to generate
+    }
+    ```
+
+4.  **Run**
     ```bash
     python main.py
     ```
 
+## ✅ Features Checklist
 
-## 🔮 To Be Update
-
-- [ ] **Advanced Vector Stores**: Support for Milvus, Chroma, and faiss for long-term memory.
-- [ ] **Flexible RAG Strategies**: Pluggable modules for Query Rewriting, Reranking, and Hybrid Search.
-- [ ] **Multi-Format Support**: Native parsing for `.pdf`, `.csv`, `.docx`, and `.pptx`.
-- [ ] **ReAct Optimization**: Enhanced fallback strategies for local SLMs (Small Language Models) and toggleable MCP tools.
-- [ ] **Local Fine-tuning**: Pipeline for fine-tuning Ollama models on your own data to improve domain-specific performance.
+- ✅ **MCP Integration**: Native support for Model Context Protocol tools.
+- ✅ **Multi-Format RAG**: Support for `.pdf`, `.csv`, and `.md` files.
+- ✅ **Advanced RAG Strategies**:
+    - ✅ Recursive Character Text Splitting.
+    - ✅ Query Rewriting (LLM-based).
+    - [ ] **Reranking**: Cross-encoder based result re-ordering.
+    - [ ] **Advanced Chunking**: Semantic and Agentic splitting strategies.
+    - [ ] **Hybrid Search**: Vector + Keyword (BM25) retrieval.
+- ✅ **Prompt Management**: Centralized prompt templates in `prompts/`.
+- [ ] **Advanced Vector Stores**: Support for Milvus/Chroma (Currently In-Memory).
+- [ ] **ReAct Optimization**: Enhanced fallback strategies for local SLMs.
+- [ ] **Local Fine-tuning**: Pipeline for fine-tuning Ollama models on your own data.
 
 ## 📄 License
 
