@@ -112,6 +112,13 @@ Connect Jarvis to Notion via MCP without touching agent logic:
    ```
    Run `python main.py`. Startup logs should show Notion tools; 401/403 usually means bad token or the page was not shared with the integration.
 
+## 🚀 Jarvis Evolution Roadmap (to be updated)
+
+- Phase 1 — Memory & Storage: add persistent memory and session recall so conversations and embeddings survive restarts; introduce conversation summarization to handle long histories. 
+- Phase 2 — Agent Architecture: refactor the loop into a clear planning/execution/reflect/respond flow using lightweight state management; require explicit plans before tool use. 
+- Phase 3 — Retrieval Depth: expand retrieval beyond dense vectors and add a simple graph-based context layer for richer relationship answers. 
+- Phase 4 — Ops & Evaluation: add automated RAG evaluation metrics and containerized delivery for reproducible deployments. 
+
 ## ✅ Features Checklist
 
 - ✅ **MCP Integration**: Native support for Model Context Protocol tools.
