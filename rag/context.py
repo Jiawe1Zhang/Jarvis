@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List
 
 from rag.embedding_retriever import EmbeddingRetriever
+from rag.loader import load_file
 from utils import log_title
 
 
@@ -26,8 +27,13 @@ def retrieve_context(
         for file_path in sorted(Path.cwd().glob(pattern)):
             if not file_path.is_file():
                 continue
-            content = file_path.read_text(encoding="utf-8")
-            retriever.embed_document(content)
+            
+            # 使用统一的加载器处理不同格式的文件
+            content = load_file(file_path)
+            
+            if content.strip():
+                retriever.embed_document(content)
+                
     context_blocks = retriever.retrieve(task, 3)
     context = "\n".join(context_blocks)
     log_title("CONTEXT")
