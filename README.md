@@ -25,7 +25,7 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
 
 1.  **Clone & Install**
     ```bash
-    git clone https://github.com/yourusername/jarvis-agent.git
+    git clone https://github.com/yourusername/Jarvis.git
     pip install -r requirements.txt
     ```
 
