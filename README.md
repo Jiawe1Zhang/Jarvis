@@ -30,11 +30,11 @@ Jarvis treats the **Agent** as the absolute core. It is a custom-built reasoning
     ```
 
 2.  **Configure**
-    Set your keys in `.env` and define your task in `src/config/user_config.json`.
+    Set your keys in `.env` and define your task in `config/user_config.json`.
 
 3.  **Run**
     ```bash
-    python -m src.main
+    python main.py
     ```
 
 
