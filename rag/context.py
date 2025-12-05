@@ -34,23 +34,28 @@ def retrieve_context(
     Note:
         base_url and api_key are read from .env environment variables
     """
+    data_signature = _compute_data_signature(knowledge_globs)
     retriever = EmbeddingRetriever(
         model=embed_model,
         chunking_strategy=chunking_strategy,
         vector_store_config=vector_store_config,
     )
-    for pattern in knowledge_globs:
-        for file_path in sorted(Path.cwd().glob(pattern)):
-            if not file_path.is_file():
-                continue
-            
-            # Use unified loader to handle files of different formats
-            content = load_file(file_path)
-            
-            if content.strip():
-                # doc_id is file name
-                retriever.embed_document(content)
+    retriever.set_meta_info(embed_model, chunking_strategy, data_signature)
+    retriever.ensure_compatibility(embed_model, chunking_strategy, data_signature)
+    reuse_index = retriever.has_ready_index(embed_model, chunking_strategy, data_signature)
+    if not reuse_index:
+        for pattern in knowledge_globs:
+            for file_path in sorted(Path.cwd().glob(pattern)):
+                if not file_path.is_file():
+                    continue
                 
+                # Use unified loader to handle files of different formats
+                content = load_file(file_path)
+                
+                if content.strip():
+                    # doc_id is file name
+                    retriever.embed_document(content)
+            
     # --- Retrieval Logic ---
     search_queries = [task]
     if enable_rewrite and llm_model:
@@ -79,3 +84,20 @@ def retrieve_context(
     # 保存向量索引（仅对支持持久化的后端有效，例如 FAISS）
     retriever.save_if_possible()
     return context
+
+
+def _compute_data_signature(knowledge_globs: List[str]) -> str:
+    """
+    Lightweight signature based on file path + mtime to detect knowledge changes.
+    """
+    parts = []
+    for pattern in knowledge_globs:
+        for file_path in sorted(Path.cwd().glob(pattern)):
+            if not file_path.is_file():
+                continue
+            try:
+                mtime = file_path.stat().st_mtime
+                parts.append(f"{file_path.relative_to(Path.cwd())}:{mtime}")
+            except Exception:
+                continue
+    return "|".join(parts)

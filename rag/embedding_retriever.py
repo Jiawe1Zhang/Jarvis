@@ -192,3 +192,25 @@ class EmbeddingRetriever:
             except Exception as exc:
                 log_title("VECTOR STORE")
                 print(f"Failed to save FAISS index: {exc}")
+
+    def set_meta_info(self, embedding_model: str, chunk_strategy: str, data_signature: str = "") -> None:
+        if isinstance(self.vector_store, FaissVectorStore):
+            self.vector_store.set_meta_info(embedding_model, chunk_strategy, data_signature)
+
+    def ensure_compatibility(self, embedding_model: str, chunk_strategy: str, data_signature: str = "") -> None:
+        """
+        If existing FAISS index meta mismatches, reset and rebuild.
+        """
+        if isinstance(self.vector_store, FaissVectorStore):
+            if not self.vector_store.is_compatible(embedding_model, chunk_strategy, data_signature):
+                self.vector_store.reset()
+
+    def has_ready_index(self, embedding_model: str, chunk_strategy: str, data_signature: str = "") -> bool:
+        """
+        Return True if a FAISS index is loaded, non-empty, and meta matches.
+        """
+        if isinstance(self.vector_store, FaissVectorStore):
+            if self.vector_store.is_compatible(embedding_model, chunk_strategy, data_signature):
+                if getattr(self.vector_store, "size", None) and self.vector_store.size() > 0:
+                    return True
+        return False

@@ -27,6 +27,10 @@ class FaissVectorStore:
         self.dim: Optional[int] = None
         self.next_id = 0
         self.id_to_doc: Dict[int, str] = {}
+        # runtime meta for compatibility check
+        self.embedding_model: Optional[str] = None
+        self.chunk_strategy: Optional[str] = None
+        self.data_signature: Optional[str] = None
 
     # --- Public API (matches in-memory store shape) ---
     def add_embedding(self, embedding: List[float], document: str) -> None:
@@ -70,6 +74,9 @@ class FaissVectorStore:
             "dim": self.dim,
             "index_factory": self.index_factory,
             "id_to_doc": self.id_to_doc,
+            "embedding_model": self.embedding_model,
+            "chunk_strategy": self.chunk_strategy,
+            "data_signature": self.data_signature,
         }
         meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
 
@@ -85,6 +92,9 @@ class FaissVectorStore:
             self.dim = meta.get("dim")
             self.index_factory = meta.get("index_factory", self.index_factory)
             self.id_to_doc = {int(k): v for k, v in meta.get("id_to_doc", {}).items()}
+            self.embedding_model = meta.get("embedding_model")
+            self.chunk_strategy = meta.get("chunk_strategy")
+            self.data_signature = meta.get("data_signature")
         else:
             self.next_id = int(self.index.ntotal)
             self.dim = self.index.d if self.index else None
@@ -128,3 +138,27 @@ class FaissVectorStore:
                 "On Intel/mac: pip install faiss-cpu (if wheels available) or conda as above."
             ) from exc
         return faiss, np
+
+    # --- Metadata helpers ---
+    def set_meta_info(self, embedding_model: str, chunk_strategy: str, data_signature: str = "") -> None:
+        self.embedding_model = embedding_model
+        self.chunk_strategy = chunk_strategy
+        self.data_signature = data_signature
+
+    def is_compatible(self, embedding_model: str, chunk_strategy: str, data_signature: str = "") -> bool:
+        if self.index is None:
+            return False
+        if self.embedding_model and self.embedding_model != embedding_model:
+            return False
+        if self.chunk_strategy and self.chunk_strategy != chunk_strategy:
+            return False
+        if self.data_signature and data_signature and self.data_signature != data_signature:
+            return False
+        return True
+
+    def reset(self) -> None:
+        """Clear index and metadata (used when meta mismatch)."""
+        self.index = None
+        self.dim = None
+        self.next_id = 0
+        self.id_to_doc = {}

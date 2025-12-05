@@ -41,12 +41,8 @@ class MCPClient:
 
         # List available tools
         response = await self.session.list_tools()
-        available_tools = [{
-            "name": tool.name,
-            "description": tool.description,
-            "input_schema": tool.inputSchema
-        } for tool in response.tools]
-        print(f"\nConnected to server with available_tools:\n{json.dumps(available_tools, indent=2)}")
+        available_tools = [tool.name for tool in response.tools]
+        print(f"\nConnected to server with tools: {', '.join(available_tools)}")
 
     async def close(self):
         """
