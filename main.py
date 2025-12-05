@@ -11,6 +11,8 @@ from config.loader import load_user_config
 from utils import log_title
 from utils.prompt_loader import load_prompt
 from rag.context import retrieve_context
+from utils.tracer import RunTracer
+from datetime import datetime
 
 
 def main() -> None:
@@ -29,6 +31,12 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     task_text = task_template.format(output_path=str(output_dir))
 
+    # --- Tracer Directory ---
+    run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    tracer_dir = Path.cwd() / "logs" / run_id
+    tracer = RunTracer(tracer_dir)
+    tracer.info("run_start", {"task": task_text})
+
     # --- Embedding & RAG (base_url/api_key read from .env) ---
     context = retrieve_context(
         task=task_text,
@@ -39,6 +47,7 @@ def main() -> None:
         rewrite_num_queries=embed_cfg.get("rewrite_num_queries", 3),
         llm_model=llm_cfg["model"],
         vector_store_config=vector_store_cfg,
+        tracer=tracer,
     )
 
     # --- MCP Servers ---
@@ -59,7 +68,7 @@ def main() -> None:
     # --- Agent (model read from config, others from .env) ---
     model_name = llm_cfg["model"]
     system_prompt = load_prompt("agent_system.md")
-    agent = Agent(model_name, mcp_clients, context=context, system_prompt=system_prompt)
+    agent = Agent(model_name, mcp_clients, context=context, system_prompt=system_prompt, tracer=tracer)
 
     async def run_agent():
         await agent.init()

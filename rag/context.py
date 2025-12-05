@@ -17,6 +17,7 @@ def retrieve_context(
     rewrite_num_queries: int = 3,
     llm_model: Optional[str] = None,
     vector_store_config: Optional[dict] = None,
+    tracer=None,
 ) -> str:
     """
     Embed knowledge sources and retrieve top matches for the given task.
@@ -42,7 +43,17 @@ def retrieve_context(
     )
     retriever.set_meta_info(embed_model, chunking_strategy, data_signature)
     retriever.ensure_compatibility(embed_model, chunking_strategy, data_signature)
+    if tracer:
+        tracer.log_event(
+            {
+                "type": "context_start",
+                "data_signature": data_signature,
+                "reuse_index": False,
+            }
+        )
     reuse_index = retriever.has_ready_index(embed_model, chunking_strategy, data_signature)
+    if tracer and reuse_index:
+        tracer.log_event({"type": "context_reuse_index", "size": getattr(retriever.vector_store, "size", lambda: None)() if retriever.vector_store else None})
     if not reuse_index:
         for pattern in knowledge_globs:
             for file_path in sorted(Path.cwd().glob(pattern)):
@@ -83,6 +94,8 @@ def retrieve_context(
     print(context)
     # 保存向量索引（仅对支持持久化的后端有效，例如 FAISS）
     retriever.save_if_possible()
+    if tracer:
+        tracer.log_event({"type": "context_done", "chunks": len(all_results)})
     return context
 
 

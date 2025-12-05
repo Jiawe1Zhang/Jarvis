@@ -17,12 +17,14 @@ class Agent:
         mcp_clients: List[MCPClient],
         system_prompt: str = "",
         context: str = "",
+        tracer=None,
     ) -> None:
         self.mcp_clients = mcp_clients
         self.system_prompt = system_prompt
         self.context = context
         self.model = model
         self.llm: Optional[ChatOpenAI] = None
+        self.tracer = tracer
 
     async def init(self) -> None:
         log_title("TOOLS")
@@ -37,7 +39,7 @@ class Agent:
             tools.extend(client_tools)
 
         # 初始化 llm
-        self.llm = ChatOpenAI(self.model, self.system_prompt, tools, self.context)
+        self.llm = ChatOpenAI(self.model, self.system_prompt, tools, self.context, tracer=self.tracer)
 
     async def close(self) -> None:
         for client in self.mcp_clients:
@@ -53,6 +55,13 @@ class Agent:
             content = response.get("content", "")
             tool_calls = response.get("tool_calls", [])
 
+            # 如果有内容，先打印出来
+            # if has llm output content, we print it
+            if content:
+                log_title("LLM OUTPUT")
+                print(f"[MODEL] {content}")
+            if not content:
+                print("[MODEL] (no content)")
             # 纯原生 Function Calling，不使用兜底策略
             if tool_calls:
                 print(f"[Native Function Calling] 检测到 {len(tool_calls)} 个工具调用")
@@ -91,6 +100,15 @@ class Agent:
                     except Exception as exc:
                         result = {"error": str(exc)}
                     print(f"Result (preview): {self._preview(result)}")
+                    if self.tracer:
+                        self.tracer.log_event(
+                            {
+                                "type": "tool_call",
+                                "tool": tool_name,
+                                "args": tool_args_dict,
+                                "result": result,
+                            }
+                        )
                     self.llm.append_tool_result(tool_id, json.dumps(result))
                 response = self.llm.chat()
                 continue

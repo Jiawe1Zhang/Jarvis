@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from openai import OpenAI
 
 from utils import ToolCall, log_title
+from utils.tracer import RunTracer
 
 
 class ChatOpenAI:
@@ -19,6 +20,7 @@ class ChatOpenAI:
         context: str = "",
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
+        tracer: Optional[RunTracer] = None,
     ) -> None:
         # Support either cloud (OpenAI-compatible) or local (e.g., Ollama) endpoints.
         resolved_base_url = (
@@ -42,6 +44,7 @@ class ChatOpenAI:
             self.messages.append({"role": "system", "content": system_prompt})
         if context:
             self.messages.append({"role": "user", "content": context})
+        self.tracer = tracer
 
     def chat(self, prompt: Optional[str] = None) -> Dict[str, Any]:
         log_title("CHAT")
@@ -70,6 +73,17 @@ class ChatOpenAI:
         log_title("RESPONSE")
         if content:
             print(content)
+
+        if self.tracer:
+            self.tracer.log_event(
+                {
+                    "type": "llm_call",
+                    "model": self.model,
+                    "messages": self.messages,
+                    "tool_calls": [tc.__dict__ for tc in tool_calls],
+                    "response_content": content,
+                }
+            )
 
         # 👇是为了在后续的对话中保留上下文和工具调用结果
         assistant_message: Dict[str, Any] = {"role": "assistant", "content": content}
