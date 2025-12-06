@@ -146,7 +146,7 @@ Connect Jarvis to Notion via MCP without touching agent logic:
  
 ## Credits
 
-- MCP tools: e.g., `mcp-simple-arxiv` (MIT License, Andy Brandt). Please mention external MCP servers/tools you integrate as a courtesy.
+- MCP tools: e.g., `mcp-simple-arxiv` (MIT License, Andy Brandt). 
 
 
 ## Evolution Roadmap (to be updated)
