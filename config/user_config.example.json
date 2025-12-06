@@ -13,9 +13,15 @@
   },
   "vector_store": {
     "backend": "memory", 
-    "index_factory": "FlatL2",
+    "index_factory": "Flat",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
+  },
+  "conversation_logging": {
+    "enabled": false,
+    "backend": "sqlite",
+    "db_path": "data/sessions.db",
+    "session_id": ""
   },
   "mcp_servers": [
     {

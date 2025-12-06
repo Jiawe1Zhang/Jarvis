@@ -5,6 +5,7 @@ from openai import OpenAI
 
 from utils import ToolCall, log_title
 from utils.tracer import RunTracer
+from utils.session_store import SessionStore
 
 
 class ChatOpenAI:
@@ -21,6 +22,9 @@ class ChatOpenAI:
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         tracer: Optional[RunTracer] = None,
+        session_store: Optional[SessionStore] = None,
+        session_id: Optional[str] = None,
+        max_history: Optional[int] = None,
     ) -> None:
         # Support either cloud (OpenAI-compatible) or local (e.g., Ollama) endpoints.
         resolved_base_url = (
@@ -40,18 +44,31 @@ class ChatOpenAI:
         self.model = model
         self.messages: List[Dict[str, Any]] = []
         self.tools = tools or []
+        self.tracer = tracer
+        self.session_store = session_store
+        self.session_id = session_id or "default"
+        self.max_history = max_history if max_history and max_history > 0 else None
+        # system prompt first
         if system_prompt:
             self.messages.append({"role": "system", "content": system_prompt})
+        # preload history (after system, before new context); history rows are raw OpenAI chat messages (role/content/tool_calls/tool)
+        if self.session_store:
+            history = self.session_store.load(self.session_id, limit=self.max_history or 0)
+            if history:
+                self.messages.extend(history)
+        # current run context (e.g., RAG)
         if context:
             self.messages.append({"role": "user", "content": context})
-        self.tracer = tracer
 
     def chat(self, prompt: Optional[str] = None) -> Dict[str, Any]:
         log_title("CHAT")
         if prompt:
-            self.messages.append({"role": "user", "content": prompt})
+            user_msg = {"role": "user", "content": prompt}
+            self.messages.append(user_msg)
+            if self.session_store:
+                self.session_store.append(self.session_id, user_msg, max_messages=self.max_history or 0)
 
-         
+        
         response = self.client.chat.completions.create(
             model=self.model,
             messages=self.messages,
@@ -100,18 +117,21 @@ class ChatOpenAI:
                 for call in tool_calls
             ]
         self.messages.append(assistant_message)
+        if self.session_store:
+            self.session_store.append(self.session_id, assistant_message, max_messages=self.max_history or 0)
 
         return {"content": content, "tool_calls": tool_calls}
 
     # 这个函数用于将工具调用的结果附加到消息列表中
     def append_tool_result(self, tool_call_id: str, tool_output: str) -> None:
-        self.messages.append(
-            {
-                "role": "tool",
-                "content": tool_output,
-                "tool_call_id": tool_call_id,
-            }
-        )
+        tool_msg = {
+            "role": "tool",
+            "content": tool_output,
+            "tool_call_id": tool_call_id,
+        }
+        self.messages.append(tool_msg)
+        if self.session_store:
+            self.session_store.append(self.session_id, tool_msg, max_messages=self.max_history or 0)
 
     # 这个函数用于将工具列表转换为OpenAI API所需的格式
     def _get_tools_definition(self) -> List[Dict[str, Any]]:

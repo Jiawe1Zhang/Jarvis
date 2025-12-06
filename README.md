@@ -71,7 +71,7 @@ From traditional RAG to Knowledge Graphs, from simple State Machines to cutting-
     jarvis             
     ```
 
-## Optional: FAISS Vector Store
+## Optional: FAISS
 
 - Install FAISS (macOS Apple Silicon: `conda install -c conda-forge faiss-cpu`; Intel/mac often `pip install faiss-cpu`, otherwise conda).
 - Vector store config options in `config/user_config.json`:
@@ -90,7 +90,23 @@ From traditional RAG to Knowledge Graphs, from simple State Machines to cutting-
   ```
 - Keep `"backend": "memory"` to use the built-in in-memory store.
 
-## Notion MCP (optional)
+## Optional: Conversation History
+
+- Enable in `config/user_config.json`:
+  ```json
+  "conversation_logging": {
+    "enabled": true,
+    "backend": "sqlite",
+    "db_path": "data/sessions.db",
+    "session_id": "your-session-id",
+    "max_history": 50
+  }
+  ```
+- What gets stored: raw OpenAI chat messages (flat list), roles preserved (`user`/`assistant`/`tool`), tool results saved as a `role: "tool"` message with a JSON string payload. System prompt is *not* stored; it’s injected fresh each run.
+- Load order when enabled: system prompt → prior history (from SQLite, capped by `max_history` if set) → current run context (RAG) → new user/assistant/tool turns. The API always receives a single flat `messages` list (no nested arrays).
+- Tracer logs remain separate under `logs/<run_id>/events.jsonl`.
+
+## Optioanl: Notion MCP 
 
 Connect Jarvis to Notion via MCP without touching agent logic:
 
@@ -141,8 +157,9 @@ Connect Jarvis to Notion via MCP without touching agent logic:
     - [ ] **Agentic RAG😯**
 
 - [ ] **Agent Workflows Optimization**: Now just ReAct, I will update more workflows in the future.
-    - [ ]: **Session Management**: Short-term and Long-term Memory 
-    - [ ]: **Memory Summarization**
+    - [ ]: **Chat history**:  
+        - ✅ **Short-term**: SQLite save and load
+        - [ ] **Long-term Memory**: Memory Summarization
     - [ ]: **Multiple Agents** 
     - [ ]: ☹️**State Definition and State Graph (DAG)**: Plan, Execute, Reflect, Response & Plan n stpes -> execute ->execute -> response
 - [ ] **Local Fine-tuning Pipeline (Model Ops)**:(Recently working on it)

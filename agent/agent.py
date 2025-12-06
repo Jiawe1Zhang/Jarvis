@@ -18,6 +18,9 @@ class Agent:
         system_prompt: str = "",
         context: str = "",
         tracer=None,
+        session_store=None,
+        session_id: str = "default",
+        max_history: Optional[int] = None,
     ) -> None:
         self.mcp_clients = mcp_clients
         self.system_prompt = system_prompt
@@ -25,6 +28,9 @@ class Agent:
         self.model = model
         self.llm: Optional[ChatOpenAI] = None
         self.tracer = tracer
+        self.session_store = session_store
+        self.session_id = session_id
+        self.max_history = max_history
 
     async def init(self) -> None:
         log_title("TOOLS")
@@ -39,7 +45,16 @@ class Agent:
             tools.extend(client_tools)
 
         # 初始化 llm
-        self.llm = ChatOpenAI(self.model, self.system_prompt, tools, self.context, tracer=self.tracer)
+        self.llm = ChatOpenAI(
+            self.model,
+            self.system_prompt,
+            tools,
+            self.context,
+            tracer=self.tracer,
+            session_store=self.session_store,
+            session_id=self.session_id,
+            max_history=self.max_history,
+        )
 
     async def close(self) -> None:
         for client in self.mcp_clients:
@@ -55,13 +70,12 @@ class Agent:
             content = response.get("content", "")
             tool_calls = response.get("tool_calls", [])
 
-            # 如果有内容，先打印出来
-            # if has llm output content, we print it
+            # 如果有内容，先打印出来；若为空但有工具调用，打印占位
             if content:
                 log_title("LLM OUTPUT")
                 print(f"[MODEL] {content}")
-            if not content:
-                print("[MODEL] (no content)")
+            elif tool_calls:
+                print("[MODEL] (tool call, no content)")
             # 纯原生 Function Calling，不使用兜底策略
             if tool_calls:
                 print(f"[Native Function Calling] 检测到 {len(tool_calls)} 个工具调用")

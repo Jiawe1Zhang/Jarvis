@@ -12,6 +12,7 @@ from utils import log_title
 from utils.prompt_loader import load_prompt
 from rag.context import retrieve_context
 from utils.tracer import RunTracer
+from utils.session_store import SessionStore
 from datetime import datetime
 
 
@@ -25,6 +26,7 @@ def main() -> None:
     knowledge_globs = cfg["knowledge_globs"]
     task_template = cfg["task_template"]
     vector_store_cfg = cfg.get("vector_store", {})
+    conversation_cfg = cfg.get("conversation_logging", {})
 
     # --- Output Directory ---
     output_dir = Path.cwd() / "output"
@@ -36,6 +38,15 @@ def main() -> None:
     tracer_dir = Path.cwd() / "logs" / run_id
     tracer = RunTracer(tracer_dir)
     tracer.info("run_start", {"task": task_text})
+
+    # --- Session Store (optional) ---
+    session_enabled = conversation_cfg.get("enabled", False)
+    session_id = conversation_cfg.get("session_id") or run_id
+    max_history = conversation_cfg.get("max_history", 0)
+    session_store = None
+    if session_enabled:
+        db_path = Path(conversation_cfg.get("db_path", "data/sessions.db"))
+        session_store = SessionStore(db_path)
 
     # --- Embedding & RAG (base_url/api_key read from .env) ---
     context = retrieve_context(
@@ -68,7 +79,18 @@ def main() -> None:
     # --- Agent (model read from config, others from .env) ---
     model_name = llm_cfg["model"]
     system_prompt = load_prompt("agent_system.md")
-    agent = Agent(model_name, mcp_clients, context=context, system_prompt=system_prompt, tracer=tracer)
+    if session_enabled:
+        system_prompt += "\n\nYou are a stateful assistant with access to prior conversation history. Use it to stay consistent, avoid repetition, and reference past context when helpful."
+    agent = Agent(
+        model_name,
+        mcp_clients,
+        context=context,
+        system_prompt=system_prompt,
+        tracer=tracer,
+        session_store=session_store,
+        session_id=session_id,
+        max_history=max_history,
+    )
 
     async def run_agent():
         await agent.init()

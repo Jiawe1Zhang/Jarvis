@@ -1,5 +1,5 @@
 {
-  "task_template": "Jarvis 是一个刚入学ZJU的医学系的学生, Jarvis想要统计今年他们医学院的录取情况, 顺便通过分析来自和他同专业同学B的高考故事来分析他后面同学B的竞争情况!你的分析要简短简洁but必须分析得有道理, 把他对在ZJU和同学B学习竞争情况的分析和Jarvis的Notion Page里已经有的内容做比较, 撰写评论保存到Jarvis的Notion page里, 作为评论内容, 而不是notion中的正文",
+  "task_template": "把刚才我写的评论通过让人恶心搞怪的语气重新写一遍,作为一个新的评论写到Notion的评论区里去",
   "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
   "output_dir": "output",
   "llm": {
@@ -16,6 +16,12 @@
     "index_factory": "FlatL2",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
+  },
+  "conversation_logging": {
+    "enabled": true,
+    "backend": "sqlite",
+    "db_path": "data/sessions.db",
+    "session_id": "1"
   },
   "mcp_servers": [
     {
