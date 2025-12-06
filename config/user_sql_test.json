@@ -1,5 +1,5 @@
 {
-  "task_template": "帮我在数据库中查一下2024年zju的计算机学院录取情况如何?",
+  "task_template": "我之前问了你什么样的问题, 总结下回答我",
   "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
   "output_dir": "output",
   "llm": {
@@ -21,7 +21,7 @@
     "enabled": true,
     "backend": "sqlite",
     "db_path": "data/sessions.db",
-    "session_id": "5",
+    "session_id": "4",
     "max_history": 5
   },
   "rag": {

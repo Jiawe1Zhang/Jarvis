@@ -144,6 +144,10 @@ Connect Jarvis to Notion via MCP without touching agent logic:
    }
    ```
  
+## Credits
+
+- MCP tools: e.g., `mcp-simple-arxiv` (MIT License, Andy Brandt). Please mention external MCP servers/tools you integrate as a courtesy.
+
 
 ## Evolution Roadmap (to be updated)
 
@@ -170,6 +174,20 @@ Connect Jarvis to Notion via MCP without touching agent logic:
 - [ ] **Local Fine-tuning Pipeline (Model Ops)**:(Recently working on it)
     - [ ] **LLaMA-Factory Bridge**: Automated config generation to trigger LoRA/Full fine-tuning jobs using your RAG data.
 - [ ] **Evaluation**🤔
+
+## Resources (YouTube)
+
+- https://www.youtube.com/watch?v=U2TP0pTsSlw
+- https://www.youtube.com/watch?v=zYGDpG-pTho
+- https://www.youtube.com/watch?v=gl1r1XV0SLw
+ 
+## Optional: Import Knowledge to SQLite (for sqlite MCP)
+
+- Use `rag/import_to_sqlite.py` to load `knowledge/` into a SQLite DB (e.g., `data/knowledge.db`) for the sqlite MCP server:
+  ```bash
+  python rag/import_to_sqlite.py --config config/user_config.json --db data/knowledge.db --table docs
+  ```
+
 
 
 
