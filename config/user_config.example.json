@@ -17,15 +17,15 @@
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
   },
-  "rag": {
-    "enabled": true
-  },
   "conversation_logging": {
     "enabled": false,
     "backend": "sqlite",
     "db_path": "data/sessions.db",
     "session_id": "",
-    "max_history": 50
+    "max_history": 5
+  },
+  "rag": {
+    "enabled": true
   },
   "mcp_servers": [
     {
@@ -45,6 +45,18 @@
       "env": {
         "NOTION_TOKEN": "${NOTION_TOKEN}"
       }
+    },
+    {
+      "name": "arxiv",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp-simple-arxiv",
+        "python",
+        "-m",
+        "mcp_simple_arxiv"
+      ]
     }
   ]
 }

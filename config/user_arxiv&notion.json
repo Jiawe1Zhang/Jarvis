@@ -1,5 +1,5 @@
 {
-  "task_template": "分析Notion中的已经有的评论内容",
+  "task_template": "把你刚才这些内容写到我的Notion页面里, 新建一个叫做Agent框架总结的page, 把内容写进去!",
   "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
   "output_dir": "output",
   "llm": {
@@ -12,10 +12,20 @@
     "rewrite_num_queries": 3
   },
   "vector_store": {
-    "backend": "memory", 
-    "index_factory": "FlatL2",
+    "backend": "faiss", 
+    "index_factory": "Flat",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
+  },
+  "conversation_logging": {
+    "enabled": true,
+    "backend": "sqlite",
+    "db_path": "data/sessions.db",
+    "session_id": "4",
+    "max_history": 5
+  },
+  "rag": {
+    "enabled": false
   },
   "mcp_servers": [
     {
@@ -35,6 +45,18 @@
       "env": {
         "NOTION_TOKEN": "${NOTION_TOKEN}"
       }
+    },
+    {
+      "name": "arxiv",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp-simple-arxiv",
+        "python",
+        "-m",
+        "mcp_simple_arxiv"
+      ]
     }
   ]
 }

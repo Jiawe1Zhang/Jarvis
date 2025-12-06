@@ -13,7 +13,7 @@
   },
   "vector_store": {
     "backend": "faiss", 
-    "index_factory": "FlatL2",
+    "index_factory": "Flat",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
   },
@@ -22,7 +22,10 @@
     "backend": "sqlite",
     "db_path": "data/sessions.db",
     "session_id": "1",
-    "max_history": 50
+    "max_history": 5
+  },
+  "rag": {
+    "enabled": true
   },
   "mcp_servers": [
     {
@@ -42,6 +45,18 @@
       "env": {
         "NOTION_TOKEN": "${NOTION_TOKEN}"
       }
+    },
+    {
+      "name": "arxiv",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp-simple-arxiv",
+        "python",
+        "-m",
+        "mcp_simple_arxiv"
+      ]
     }
   ]
 }

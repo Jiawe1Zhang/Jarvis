@@ -107,8 +107,8 @@ From traditional RAG to Knowledge Graphs, from simple State Machines to cutting-
     "max_history": 50
   }
   ```
-- What gets stored: raw OpenAI chat messages (flat list), roles preserved (`user`/`assistant`/`tool`), tool results saved as a `role: "tool"` message with a JSON string payload. System prompt is *not* stored; it’s injected fresh each run.
-- Load order when enabled: system prompt → prior history (from SQLite, capped by `max_history` if set) → current run context (RAG) → new user/assistant/tool turns. The API always receives a single flat `messages` list (no nested arrays).
+- What gets stored: completed turns (user → tool calls/results → assistant) as raw OpenAI chat messages. System prompt is *not* stored; it’s injected fresh each run.
+- Load order when enabled: system prompt → prior turns (from SQLite, capped by `max_history` turns) → current run context (RAG) → new user/assistant/tool turns. The API always receives a single flat `messages` list (no nested arrays).
 - Tracer logs remain separate under `logs/<run_id>/events.jsonl`.
 
 ## Optioanl: Notion MCP 

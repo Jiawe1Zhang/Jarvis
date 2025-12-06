@@ -1,0 +1,2 @@
+{"timestamp": "2025-12-06T08:17:43.716435Z", "type": "info", "task": "帮我查一下最近关于 RAG Agent 的 arXiv 论文，总结一下他们的核心观点。然后把总结写到 Notion 的页面里去。", "message": "run_start"}
+{"timestamp": "2025-12-06T08:17:43.720701Z", "type": "info", "reason": "config.disabled", "message": "rag_disabled"}

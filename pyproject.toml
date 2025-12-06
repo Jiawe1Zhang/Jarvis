@@ -7,7 +7,7 @@ name = "jarvis-agent"
 version = "0.1.0"
 description = "A lightweight MCP + RAG agent framework."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "mcp==1.22.0",
   "openai==2.8.1",

@@ -20,7 +20,7 @@ class Agent:
         tracer=None,
         session_store=None,
         session_id: str = "default",
-        max_history: Optional[int] = None,
+        max_history_turns: Optional[int] = None,
     ) -> None:
         self.mcp_clients = mcp_clients
         self.system_prompt = system_prompt
@@ -30,7 +30,7 @@ class Agent:
         self.tracer = tracer
         self.session_store = session_store
         self.session_id = session_id
-        self.max_history = max_history
+        self.max_history_turns = max_history_turns
 
     async def init(self) -> None:
         log_title("TOOLS")
@@ -53,7 +53,7 @@ class Agent:
             tracer=self.tracer,
             session_store=self.session_store,
             session_id=self.session_id,
-            max_history=self.max_history,
+            max_history_turns=self.max_history_turns,
         )
 
     async def close(self) -> None:
@@ -127,6 +127,10 @@ class Agent:
                 response = self.llm.chat()
                 continue
             return content
+
+    def flush_history(self) -> None:
+        if self.llm and hasattr(self.llm, "flush_history"):
+            self.llm.flush_history()
 
     async def _find_client(self, tool_name: str) -> Optional[MCPClient]:
         for client in self.mcp_clients:

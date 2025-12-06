@@ -18,7 +18,7 @@ from datetime import datetime
 
 def main() -> None:
     load_dotenv()  # Load OPENAI_BASE_URL, OPENAI_API_KEY, OLLAMA_EMBED_BASE_URL etc. from .env
-    cfg = load_user_config()
+    cfg = load_user_config("config/user_arxiv&notion.json")
 
     # --- Load Config ---
     llm_cfg = cfg["llm"]
@@ -43,7 +43,7 @@ def main() -> None:
     # --- Session Store (optional) ---
     session_enabled = conversation_cfg.get("enabled", False)
     session_id = conversation_cfg.get("session_id") or run_id
-    max_history = conversation_cfg.get("max_history", 0)
+    max_history_turns = conversation_cfg.get("max_history", 0)
     session_store = None
     if session_enabled:
         db_path = Path(conversation_cfg.get("db_path", "data/sessions.db"))
@@ -52,6 +52,7 @@ def main() -> None:
     # --- Embedding & RAG (base_url/api_key read from .env) ---
     context = ""
     if rag_cfg.get("enabled", True):
+        # 这里拿到的context没有用户的query以及query 的改写, 就是纯rag的上下文
         context = retrieve_context(
             task=task_text,
             knowledge_globs=knowledge_globs,
@@ -94,17 +95,25 @@ def main() -> None:
         tracer=tracer,
         session_store=session_store,
         session_id=session_id,
-        max_history=max_history,
+        max_history_turns=max_history_turns,
     )
 
     async def run_agent():
         await agent.init()
         try:
+            # 这里传入用户的任务
             await agent.invoke(task_text)
         finally:
             await agent.close()
 
-    asyncio.run(run_agent())
+    try:
+        asyncio.run(run_agent())
+    except Exception as exc:
+        tracer.info("run_error", {"error": str(exc)})
+        raise
+    else:
+        # flush history only on successful run
+        agent.flush_history()
 
 
 if __name__ == "__main__":

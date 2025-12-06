@@ -16,6 +16,9 @@ rag/embedding_retriever.py
 rag/loader.py
 rag/query_rewriter.py
 rag/vector_store.py
+rag/vector_store_faiss.py
 utils/__init__.py
 utils/common.py
 utils/prompt_loader.py
+utils/session_store.py
+utils/tracer.py
