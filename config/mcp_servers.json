@@ -1,0 +1,62 @@
+[
+  {
+    "name": "fetch",
+    "command": "uvx",
+    "args": ["mcp-server-fetch"],
+    "domains": ["SEARCH"],
+    "tools": []
+  },
+  {
+    "name": "filesystem",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "{output_dir}"],
+    "domains": ["CODING"],
+    "tools": [
+      "read_file",
+      "read_text_file",
+      "read_media_file",
+      "read_multiple_files",
+      "write_file",
+      "edit_file",
+      "create_directory",
+      "list_directory",
+      "list_directory_with_sizes",
+      "directory_tree",
+      "move_file",
+      "search_files",
+      "get_file_info",
+      "list_allowed_directories"
+    ]
+  },
+  {
+    "name": "Notion",
+    "command": "npx",
+    "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+    "env": {
+      "NOTION_TOKEN": "${NOTION_TOKEN}"
+    },
+    "domains": ["PRODUCTIVITY"],
+    "tools": ["notion_client"]
+  },
+  {
+    "name": "arxiv",
+    "command": "uv",
+    "args": [
+      "run",
+      "--with",
+      "mcp-simple-arxiv",
+      "python",
+      "-m",
+      "mcp_simple_arxiv"
+    ],
+    "domains": ["SEARCH"],
+    "tools": ["arxiv"]
+  },
+  {
+    "name": "sqlite",
+    "command": "uvx",
+    "args": ["mcp-server-sqlite", "--db-path", "data/knowledge.db"],
+    "domains": ["CODING"],
+    "tools": ["sqlite"]
+  }
+]

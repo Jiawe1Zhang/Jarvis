@@ -208,17 +208,22 @@ class SimpleLLMClient:
         )
         self.model = model
 
-    def generate(self, prompt: str, system_prompt: str = "") -> str:
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        response_format: Optional[Dict[str, Any]] = None,
+    ) -> str:
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-            )
+            request_args = {"model": self.model, "messages": messages}
+            if response_format is not None:
+                request_args["response_format"] = response_format
+            response = self.client.chat.completions.create(**request_args)
             return response.choices[0].message.content or ""
         except Exception as e:
             print(f"SimpleLLMClient error: {e}")

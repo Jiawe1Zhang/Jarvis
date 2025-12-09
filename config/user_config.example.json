@@ -1,6 +1,11 @@
 {
+  "query_template": "Jarvis 是一个刚入学ZJU的医学系的学生, Jarvis想要统计今年他们医学院的录取情况, 顺便通过分析来自和他同专业同学B的高考故事来分析他后面同学B的竞争情况!你的分析要简短简洁but必须分析得有道理, 把他对在ZJU和同学B学习竞争情况的分析保存到{output_path}/zjuanalysisqueryrewriteB.md, 输出一个漂亮md文件",
   "task_template": "Jarvis 是一个刚入学ZJU的医学系的学生, Jarvis想要统计今年他们医学院的录取情况, 顺便通过分析来自和他同专业同学B的高考故事来分析他后面同学B的竞争情况!你的分析要简短简洁but必须分析得有道理, 把他对在ZJU和同学B学习竞争情况的分析保存到{output_path}/zjuanalysisqueryrewriteB.md, 输出一个漂亮md文件",
-  "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
+  "knowledge_globs": [
+    "knowledge/*.md",
+    "knowledge/*.pdf",
+    "knowledge/*.csv"
+  ],
   "output_dir": "output",
   "llm": {
     "model": "gpt-5"
@@ -12,7 +17,7 @@
     "rewrite_num_queries": 3
   },
   "vector_store": {
-    "backend": "memory", 
+    "backend": "memory",
     "index_factory": "Flat",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
@@ -27,39 +32,10 @@
   "tui": {
     "enabled": false
   },
-  "rag": {
+  "intent_router": {
     "enabled": true
   },
-  "mcp_servers": [
-    {
-      "name": "fetch",
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
-    {
-      "name": "filesystem",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "{output_dir}"]
-    },
-    {
-      "name": "Notion",
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
-      "env": {
-        "NOTION_TOKEN": "${NOTION_TOKEN}"
-      }
-    },
-    {
-      "name": "arxiv",
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "mcp-simple-arxiv",
-        "python",
-        "-m",
-        "mcp_simple_arxiv"
-      ]
-    }
-  ]
+  "knowledge": {
+    "enabled": true
+  }
 }

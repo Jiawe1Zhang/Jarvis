@@ -1,6 +1,11 @@
 {
+  "query_template": "帮我在Arxiv找些最新的agent的文章, 并且把他们的一些核心实验方法总结到我的一个新的Notion页面里, 标题要加上",
   "task_template": "帮我在Arxiv找些最新的agent的文章, 并且把他们的一些核心实验方法总结到我的一个新的Notion页面里, 标题要加上",
-  "knowledge_globs": ["knowledge/*.md", "knowledge/*.pdf", "knowledge/*.csv"],
+  "knowledge_globs": [
+    "knowledge/*.md",
+    "knowledge/*.pdf",
+    "knowledge/*.csv"
+  ],
   "output_dir": "output",
   "llm": {
     "model": "gpt-5"
@@ -12,7 +17,7 @@
     "rewrite_num_queries": 3
   },
   "vector_store": {
-    "backend": "faiss", 
+    "backend": "faiss",
     "index_factory": "Flat",
     "path": "data/faiss.index",
     "meta_path": "data/faiss.meta.json"
@@ -25,46 +30,12 @@
     "max_history": 5
   },
   "tui": {
-    "enabled": true
-  },
-  "rag": {
     "enabled": false
   },
-  "mcp_servers": [
-    {
-      "name": "fetch",
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
-    {
-      "name": "filesystem",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "{output_dir}"]
-    },
-    {
-      "name": "Notion",
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
-      "env": {
-        "NOTION_TOKEN": "${NOTION_TOKEN}"
-      }
-    },
-    {
-      "name": "arxiv",
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "mcp-simple-arxiv",
-        "python",
-        "-m",
-        "mcp_simple_arxiv"
-      ]
-    },
-    {
-      "name": "sqlite",
-      "command": "uvx",
-      "args": ["mcp-server-sqlite", "--db-path", "data/knowledge.db"]
-    }
-  ]
+  "intent_router": {
+    "enabled": true
+  },
+  "knowledge": {
+    "enabled": false
+  }
 }

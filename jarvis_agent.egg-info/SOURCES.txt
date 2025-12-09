@@ -13,6 +13,7 @@ jarvis_agent.egg-info/top_level.txt
 mcp_core/mcp_client.py
 rag/context.py
 rag/embedding_retriever.py
+rag/import_to_sqlite.py
 rag/loader.py
 rag/query_rewriter.py
 rag/vector_store.py
@@ -22,3 +23,4 @@ utils/common.py
 utils/prompt_loader.py
 utils/session_store.py
 utils/tracer.py
+utils/ui.py

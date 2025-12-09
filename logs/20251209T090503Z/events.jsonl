@@ -1,0 +1,4 @@
+{"timestamp": "2025-12-09T09:05:03.700567Z", "type": "info", "query": "帮我在Arxiv找些最新的agent的文章, 并且把他们的一些核心实验方法总结到我的一个新的Notion页面里, 标题要加上", "message": "run_start"}
+{"timestamp": "2025-12-09T09:05:05.857137Z", "type": "info", "intent": "RAG", "message": "intent_router"}
+{"timestamp": "2025-12-09T09:05:05.857369Z", "type": "info", "reason": "config.disabled", "message": "knowledge_disabled"}
+{"timestamp": "2025-12-09T09:05:05.862674Z", "type": "info", "reason": "config.disabled", "message": "rag_disabled"}
