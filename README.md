@@ -1,37 +1,41 @@
+English | [中文](README.zh.md)
+
 ![Jarvis Architecture](images/jarvis-architecture.png)
 
+**Jarvis: A terminal-first research/knowledge assistant for grad students**
 
-## Project Structure 
+Focus: Arxiv search → local parse → summarization → Notion sync. Intent-aware tool routing, optional RAG, persistent chat history, and minimal setup.
+
+## Project Structure
 
 ```text
 .
-├── agent/              # Core Agent Logic & LLM Client
-│   └── router/         # Intent router (L1/L2 proposer + L3 reviewer)
-├── config/             # user configs + mcp_servers registry
+├── agent/              # Core agent logic & LLM client
+│   └── router/         # Intent router (L1 proposer + L3 reviewer)
+├── config/             # User configs + MCP server registry
 ├── knowledge/          # Your documents (PDF, MD, CSV)
-├── mcp_core/           # Native Model Context Protocol Client
+├── mcp_core/           # Native MCP client
 ├── output/             # Agent artifacts
-├── papers/             # ArXiv下载的 PDF/MD（由 arxiv MCP 生成）
-├── prompts/            # Centralized System Prompts
-├── rag/                # RAG Pipeline
-│   ├── chunk/          # Splitting strategies (Recursive, etc.)
+├── papers/             # Arxiv PDFs/MD from the MCP server
+├── prompts/            # System prompts
+├── rag/                # RAG pipeline
+│   ├── chunk/          # Splitters
 │   ├── context.py      # Retrieval logic
-│   ├── query_rewriter.py # LLM-based Query Decomposition
+│   ├── query_rewriter.py
 │   └── ...
 ├── utils/              # Shared utilities
-└── main.py             # Entry point
+└── main.py             # Entry point (interactive loop)
 ```
 
 ## Quick Start
 
-1) **Clone & Install**
+1) Clone & install  
 ```bash
 git clone https://github.com/Jiawe1Zhang/Jarvis.git
 pip install -r requirements.txt
 ```
 
-2) **Configure Environment**
-`.env` 中放模型/Notion Token 等：
+2) Environment  
 ```env
 OPENAI_API_KEY=sk-...
 OPENAI_BASE_URL=https://api.openai.com/v1
@@ -39,14 +43,14 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 NOTION_TOKEN=ntn_...
 ```
 
-3) **配置**  
-用户配置：`config/user_config.json`（或你的自定义文件）。  
-MCP 注册表：`config/mcp_servers.json`（工具域/工具列表，用于路由筛选）。
+3) Configure  
+- User config: `config/user_config.json` (or your own).  
+- MCP registry: `config/mcp_servers.json` (domains/tools for routing).
 
-核心开关示例：
+Key switches:
 ```json
-"knowledge": { "enabled": true },          // 是否允许用本地知识库（RAG）
-"intent_router": { "enabled": true },      // 是否启用意图路由/工具筛选
+"knowledge": { "enabled": true },
+"intent_router": { "enabled": true },
 "conversation_logging": {
   "enabled": true,
   "db_path": "data/sessions.db",
@@ -55,77 +59,18 @@ MCP 注册表：`config/mcp_servers.json`（工具域/工具列表，用于路�
 }
 ```
 
-4) **Run**
+4) Run (interactive loop)  
 ```bash
 python main.py \
   --config config/user_config.json \
   --mcp-registry config/mcp_servers.json
 ```
-运行后终端会提示输入 query；路由会决定是否检索本地知识、加载哪些 MCP 服务器（例如 arxiv、Notion、filesystem 等）。
+You’ll be prompted for a query; routing decides whether to use local knowledge and which MCP servers to load. MCP connections are opened on first use and reused within the process.
 
-## Evolution Roadmap (to be updated)
+## Notes
 
-- **Agentic RAG Strategies**:
-    - Recursive Character Text Splitting.
-    - Query Rewriting (LLM-based).
-    - Vector Database (Faiss in local).
-    - [ ] **Reranking**: Cross-encoder based result re-ordering.
-    - [ ] **More Advanced Chunking**: like Semantic and Agentic splitting strategies etc.
-    - [ ] **Hybrid Search**: Vector + Keyword (BM25) retrieval.
-    - [ ] **GraphRAG**
-
-- [ ] **Agent Workflows Optimization**: Now just ReAct, I will update more workflows in the future.
-    - [ ]: **Chat history**:  
-        - ✅ **Short-term**: SQLite save and load
-        - [ ] **Long-term Memory**: Memory Summarization
-    - [ ]: **Multiple Agents** 
-    - [ ]: ☹️**State Definition and State Graph (DAG)**: Plan, Execute, Reflect, Response & Plan n stpes -> execute ->execute -> response
-- [ ] **Local Fine-tuning Pipeline (Model Ops)**:(Recently working on it)
-    - [ ] **LLaMA-Factory Bridge**: Automated config generation to trigger LoRA/Full fine-tuning jobs using your RAG data.
-- [ ] **Evaluation**🤔
-
-## Agent Architecture Tricks in Recent Papers & Resources
-
-- Agentic Plan Caching: Test-Time Memory for Fast and Cost-Efficient LLM Agents : https://openreview.net/forum?id=n4V3MSqK77
-
-- https://www.youtube.com/watch?v=U2TP0pTsSlw
-- https://www.youtube.com/watch?v=zYGDpG-pTho
-- https://www.youtube.com/watch?v=gl1r1XV0SLw
-
-
-## How to connect Notion 
-
-Connect Jarvis to Notion via MCP without touching agent logic:
-
-1) Create an integration  
-   Go to Notion → Integrations → New integration in your workspace. Enable **Read content**, **Update content**, **Insert content**.  
-   ![Notion integration list](images/notion-integration-list.png)  
-   ![Notion integration capabilities](images/notion-integration-capabilities.png)
-
-2) Get the token  
-   Copy the Internal Integration Token (`ntn_...`). Keep it in `.env`, not in code.
-
-3) Choose pages/databases  
-   Search the pages/databases you want the agent to connect. And give them Permissions.
-   ![Notion page access](images/notion-page-access.png)
-
-4) Wire it into Jarvis  
-   Add to `.env`:
-   ```env
-   NOTION_TOKEN=ntn_xxx
-   ```  
-   Add to `config/user_config.json` (`env` placeholders resolve from `.env` at runtime):
-   ```json
-   {
-     "name": "notion",
-     "command": "npx",
-     "args": ["-y", "@modelcontextprotocol/server-notion"],
-     "env": {
-       "NOTION_TOKEN": "${NOTION_TOKEN}"
-     }
-   }
-   ```
-
-## License
-
-MIT License
+- `.gitignore` excludes logs/, output/, papers/, knowledge/, and vector index artifacts.  
+- Commit `pyproject.toml`; commit `uv.lock` only if you use `uv` for deps.  
+- Arxiv MCP saves both PDF and parsed `.md` by design.  
+- If you renamed the GitHub repo, update your remote:  
+  `git remote set-url origin https://github.com/<you>/jarvis.git`.
