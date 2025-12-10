@@ -37,6 +37,12 @@ data/*.index
 data/*.meta.json
 data/faiss*
 
+# local artifacts
+logs/
+output/
+papers/
+knowledge/
+
 
 logs/
 papers/
